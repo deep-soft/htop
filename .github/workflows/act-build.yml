@@ -3,8 +3,9 @@
 #
 name: act-build
 
-on: [ push, pull_request, workflow_dispatch ]
-# on: workflow_dispatch:
+#on: [ push, pull_request, workflow_dispatch ]
+on:
+  workflow_dispatch:
 
 env:
   # Enable format attributes in ncurses headers
