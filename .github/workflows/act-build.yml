@@ -17,7 +17,7 @@ env:
   TAG_VERSION:  '2.2.0'
 
 jobs:
-  ubuntu-latest-minimal-gcc:
+  ubuntu-20-minimal-gcc:
     runs-on: ubuntu-20.04
     steps:
     - name: Checkout
@@ -85,7 +85,7 @@ jobs:
     - name: Distcheck
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
 
-  ubuntu-latest-full-featured-gcc:
+  ubuntu-20-full-featured-gcc:
     runs-on: ubuntu-20.04
     # Enable LTO, might trigger additional warnings on advanced inlining
     env:
@@ -176,7 +176,7 @@ jobs:
           ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
 # zip release end
 
-  ubuntu-latest-gcc-static:
+  ubuntu-20-gcc-static:
     runs-on: ubuntu-20.04
     # Enable LTO, might trigger additional warnings on advanced inlining
     env:
