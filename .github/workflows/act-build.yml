@@ -1,4 +1,4 @@
-# 2023-12-28 08:30
+# 2023-12-28 09:30
 #
 #
 name: act-build
@@ -6,12 +6,6 @@ name: act-build
 #on: [ push, pull_request, workflow_dispatch ]
 on:
   workflow_dispatch:
-    inputs:
-      CreateZipAll:
-        description: CreateZipAll
-        type: boolean
-        default: false
-        required: true
 
 env:
   # Enable format attributes in ncurses headers
@@ -28,6 +22,18 @@ jobs:
     steps:
     - name: Checkout
       uses: deep-soft/checkout@v4
+
+    - name: Get version, set ARC_NAME
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        add_to_name="gcc-minimal";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev
@@ -47,25 +53,27 @@ jobs:
     - name: Build
       run: make -k
 
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
-
-    - name: Get version
-      shell: bash
+# zip release begin
+    - name: Prepare files for Zip Archive Release
       run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        mkdir _release_
+        cp htop     _release_ || true;
+        cp pcp-htop _release_ || true;
+        cp readme   _release_ || true;
 
-    - name: Rename arc
-      run: |
-        add_to_name="minimal-gcc";
-        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
-        mv $org_name $arc_name;
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+    - name: Create Zip Archive Release
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}.zip'
+        directory: '_release_'
+        path.
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
 
     - name: Publish
       continue-on-error: true
@@ -73,32 +81,11 @@ jobs:
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
-          ${{ env.ARC_NAME }}
-
-# zip release begin
-    - name: Create Zip Archive Release - ALL
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/zip-release@v2
-      with:
-        type: 'zip'
-        filename: '${{ env.ARC_NAME }}-ALL.zip'
-        directory: '.'
-        exclusions: ''
-        recursive_exclusions: ''
-        path: '.'
-        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
-      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
-
-    - name: Publish
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
-      with:
-        tag_name: ${{ env.TAG_NAME }}-ALL
-        files: |
-          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+          ${{ env.ZIP_RELEASE_ARCHIVE }}
 # zip release end
+
+    - name: Distcheck
+      run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
 
   ubuntu-latest-minimal-clang:
     runs-on: ubuntu-latest
@@ -107,6 +94,18 @@ jobs:
     steps:
     - name: Checkout
       uses: deep-soft/checkout@v4
+
+    - name: Get version, set ARC_NAME
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        add_to_name="clang-minimal";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: install clang repo
       run: |
@@ -126,25 +125,27 @@ jobs:
     - name: Build
       run: make -k
 
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
-
-    - name: Get version
-      shell: bash
+# zip release begin
+    - name: Prepare files for Zip Archive Release
       run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        mkdir _release_
+        cp htop     _release_ || true;
+        cp pcp-htop _release_ || true;
+        cp readme   _release_ || true;
 
-    - name: Rename arc
-      run: |
-        add_to_name="minimal-clang";
-        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
-        mv $org_name $arc_name;
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+    - name: Create Zip Archive Release
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}.zip'
+        directory: '_release_'
+        path.
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
 
     - name: Publish
       continue-on-error: true
@@ -152,32 +153,11 @@ jobs:
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
-          ${{ env.ARC_NAME }}
-
-# zip release begin
-    - name: Create Zip Archive Release - ALL
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/zip-release@v2
-      with:
-        type: 'zip'
-        filename: '${{ env.ARC_NAME }}-ALL.zip'
-        directory: '.'
-        exclusions: ''
-        recursive_exclusions: ''
-        path: '.'
-        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
-      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
-
-    - name: Publish
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
-      with:
-        tag_name: ${{ env.TAG_NAME }}-ALL
-        files: |
-          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+          ${{ env.ZIP_RELEASE_ARCHIVE }}
 # zip release end
+
+    - name: Distcheck
+      run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
 
   ubuntu-latest-full-featured-gcc:
     runs-on: ubuntu-latest
@@ -188,6 +168,18 @@ jobs:
     steps:
     - name: Checkout
       uses: deep-soft/checkout@v4
+
+    - name: Get version, set ARC_NAME
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        add_to_name="gcc-full";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev
@@ -201,25 +193,27 @@ jobs:
     - name: Build
       run: make -k
 
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities'
-
-    - name: Get version
-      shell: bash
+# zip release begin
+    - name: Prepare files for Zip Archive Release
       run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        mkdir _release_
+        cp htop     _release_ || true;
+        cp pcp-htop _release_ || true;
+        cp readme   _release_ || true;
 
-    - name: Rename arc
-      run: |
-        add_to_name="full-gcc";
-        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
-        mv $org_name $arc_name;
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+    - name: Create Zip Archive Release
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}.zip'
+        directory: '_release_'
+        path.
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
 
     - name: Publish
       continue-on-error: true
@@ -227,7 +221,11 @@ jobs:
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
-          ${{ env.ARC_NAME }}
+          ${{ env.ZIP_RELEASE_ARCHIVE }}
+# zip release end
+
+    - name: Distcheck
+      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities'
 
 # zip release begin
     - name: Create Zip Archive Release - ALL
@@ -262,6 +260,18 @@ jobs:
     - name: Checkout
       uses: deep-soft/checkout@v4
 
+    - name: Get version, set ARC_NAME
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        add_to_name="clang-full";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
     - name: install clang repo
       run: |
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key 2>/dev/null | sudo apt-key add -
@@ -280,25 +290,27 @@ jobs:
     - name: Build
       run: make -k
 
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities'
-
-    - name: Get version
-      shell: bash
+# zip release begin
+    - name: Prepare files for Zip Archive Release
       run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        mkdir _release_
+        cp htop     _release_ || true;
+        cp pcp-htop _release_ || true;
+        cp readme   _release_ || true;
 
-    - name: Rename arc
-      run: |
-        add_to_name="full-clang";
-        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
-        mv $org_name $arc_name;
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+    - name: Create Zip Archive Release
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}.zip'
+        directory: '_release_'
+        path.
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
 
     - name: Publish
       continue-on-error: true
@@ -306,32 +318,11 @@ jobs:
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
-          ${{ env.ARC_NAME }}
-
-# zip release begin
-    - name: Create Zip Archive Release - ALL
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/zip-release@v2
-      with:
-        type: 'zip'
-        filename: '${{ env.ARC_NAME }}-ALL.zip'
-        directory: '.'
-        exclusions: ''
-        recursive_exclusions: ''
-        path: '.'
-        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
-      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
-
-    - name: Publish
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
-      with:
-        tag_name: ${{ env.TAG_NAME }}-ALL
-        files: |
-          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+          ${{ env.ZIP_RELEASE_ARCHIVE }}
 # zip release end
+
+    - name: Distcheck
+      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities'
 
   ubuntu-latest-gcc-static:
     runs-on: ubuntu-latest
@@ -342,6 +333,18 @@ jobs:
     steps:
     - name: Checkout
       uses: deep-soft/checkout@v4
+
+    - name: Get version, set ARC_NAME
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        add_to_name="gcc-static";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev libtinfo-dev libgpm-dev libsensors4-dev libcap-dev
@@ -355,25 +358,27 @@ jobs:
     - name: Build
       run: make -k
 
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-static --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --disable-hwloc --disable-delayacct --enable-sensors --enable-capabilities'
-
-    - name: Get version
-      shell: bash
+# zip release begin
+    - name: Prepare files for Zip Archive Release
       run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        mkdir _release_
+        cp htop     _release_ || true;
+        cp pcp-htop _release_ || true;
+        cp readme   _release_ || true;
 
-    - name: Rename arc
-      run: |
-        add_to_name="static";
-        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
-        mv $org_name $arc_name;
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+    - name: Create Zip Archive Release
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}.zip'
+        directory: '_release_'
+        path.
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
 
     - name: Publish
       continue-on-error: true
@@ -381,32 +386,11 @@ jobs:
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
-          ${{ env.ARC_NAME }}
-
-# zip release begin
-    - name: Create Zip Archive Release - ALL
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/zip-release@v2
-      with:
-        type: 'zip'
-        filename: '${{ env.ARC_NAME }}-ALL.zip'
-        directory: '.'
-        exclusions: ''
-        recursive_exclusions: ''
-        path: '.'
-        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
-      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
-
-    - name: Publish
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
-      with:
-        tag_name: ${{ env.TAG_NAME }}-ALL
-        files: |
-          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+          ${{ env.ZIP_RELEASE_ARCHIVE }}
 # zip release end
+
+    - name: Distcheck
+      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-static --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --disable-hwloc --disable-delayacct --enable-sensors --enable-capabilities'
 
   ubuntu-latest-pcp:
     # we want PCP v5.2.3+
@@ -414,6 +398,18 @@ jobs:
     steps:
     - name: Checkout
       uses: deep-soft/checkout@v4
+
+    - name: Get version, set ARC_NAME
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        add_to_name="pcp";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libpcp3-dev libncursesw5-dev libtinfo-dev libgpm-dev
@@ -427,25 +423,27 @@ jobs:
     - name: Build
       run: make -k
 
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-pcp --enable-unicode'
-
-    - name: Get version
-      shell: bash
+# zip release begin
+    - name: Prepare files for Zip Archive Release
       run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        mkdir _release_
+        cp htop     _release_ || true;
+        cp pcp-htop _release_ || true;
+        cp readme   _release_ || true;
 
-    - name: Rename arc
-      run: |
-        add_to_name="pcp";
-        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
-        mv $org_name $arc_name;
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+    - name: Create Zip Archive Release
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}.zip'
+        directory: '_release_'
+        path.
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
 
     - name: Publish
       continue-on-error: true
@@ -453,32 +451,11 @@ jobs:
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
-          ${{ env.ARC_NAME }}
-
-# zip release begin
-    - name: Create Zip Archive Release - ALL
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/zip-release@v2
-      with:
-        type: 'zip'
-        filename: '${{ env.ARC_NAME }}-ALL.zip'
-        directory: '.'
-        exclusions: ''
-        recursive_exclusions: ''
-        path: '.'
-        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
-      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
-
-    - name: Publish
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
-      with:
-        tag_name: ${{ env.TAG_NAME }}-ALL
-        files: |
-          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+          ${{ env.ZIP_RELEASE_ARCHIVE }}
 # zip release end
+
+    - name: Distcheck
+      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-pcp --enable-unicode'
 
   ubuntu-latest-clang-analyzer:
     runs-on: ubuntu-latest
@@ -561,6 +538,18 @@ jobs:
     - name: Checkout
       uses: deep-soft/checkout@v4
 
+    - name: Get version, set ARC_NAME
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        add_to_name="macOS";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
     - name: Install Dependencies
       run: brew install automake pkg-config
 
@@ -573,25 +562,27 @@ jobs:
     - name: Build
       run: make -k
 
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror"
-
-    - name: Get version
-      shell: bash
+# zip release begin
+    - name: Prepare files for Zip Archive Release
       run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+        mkdir _release_
+        cp htop     _release_ || true;
+        cp pcp-htop _release_ || true;
+        cp readme   _release_ || true;
 
-    - name: Rename arc
-      run: |
-        add_to_name="minimal-gcc";
-        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
-        mv $org_name $arc_name;
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+    - name: Create Zip Archive Release
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}.zip'
+        directory: '_release_'
+        path.
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
 
     - name: Publish
       continue-on-error: true
@@ -599,29 +590,8 @@ jobs:
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
-          ${{ env.ARC_NAME }}
-
-# zip release begin
-    - name: Create Zip Archive Release - ALL
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/zip-release@v2
-      with:
-        type: 'zip'
-        filename: '${{ env.ARC_NAME }}-ALL.zip'
-        directory: '.'
-        exclusions: ''
-        recursive_exclusions: ''
-        path: '.'
-        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
-      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
-
-    - name: Publish
-      if: ${{ inputs.CreateZipAll }}
-      continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
-      with:
-        tag_name: ${{ env.TAG_NAME }}-ALL
-        files: |
-          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+          ${{ env.ZIP_RELEASE_ARCHIVE }}
 # zip release end
+
+    - name: Distcheck
+      run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror"
