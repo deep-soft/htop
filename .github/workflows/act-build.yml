@@ -1,4 +1,4 @@
-# 2023-12-28 07:20
+# 2023-12-28 08:30
 #
 #
 name: act-build
@@ -17,7 +17,7 @@ env:
   TAG_VERSION:  '3.3.0'
 
 jobs:
-  build-ubuntu-latest-minimal-gcc:
+  ubuntu-latest-minimal-gcc:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
@@ -69,7 +69,32 @@ jobs:
         files: |
           ${{ env.ARC_NAME }}
 
-  build-ubuntu-latest-minimal-clang:
+# zip release begin
+    - name: Create Zip Archive Release - ALL
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}-ALL.zip'
+        directory: '.'
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+
+    - name: Publish
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-ALL
+        files: |
+          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+# zip release end
+
+  ubuntu-latest-minimal-clang:
     runs-on: ubuntu-latest
     env:
       CC: clang-16
@@ -123,7 +148,32 @@ jobs:
         files: |
           ${{ env.ARC_NAME }}
 
-  build-ubuntu-latest-full-featured-gcc:
+# zip release begin
+    - name: Create Zip Archive Release - ALL
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}-ALL.zip'
+        directory: '.'
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+
+    - name: Publish
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-ALL
+        files: |
+          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+# zip release end
+
+  ubuntu-latest-full-featured-gcc:
     runs-on: ubuntu-latest
     # Enable LTO, might trigger additional warnings on advanced inlining
     env:
@@ -173,7 +223,32 @@ jobs:
         files: |
           ${{ env.ARC_NAME }}
 
-  build-ubuntu-latest-full-featured-clang:
+# zip release begin
+    - name: Create Zip Archive Release - ALL
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}-ALL.zip'
+        directory: '.'
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+
+    - name: Publish
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-ALL
+        files: |
+          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+# zip release end
+
+  ubuntu-latest-full-featured-clang:
     runs-on: ubuntu-latest
     env:
       CC: clang-16
@@ -227,7 +302,32 @@ jobs:
         files: |
           ${{ env.ARC_NAME }}
 
-  build-ubuntu-latest-gcc-static:
+# zip release begin
+    - name: Create Zip Archive Release - ALL
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}-ALL.zip'
+        directory: '.'
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+
+    - name: Publish
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-ALL
+        files: |
+          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+# zip release end
+
+  ubuntu-latest-gcc-static:
     runs-on: ubuntu-latest
     # Enable LTO, might trigger additional warnings on advanced inlining
     env:
@@ -277,7 +377,32 @@ jobs:
         files: |
           ${{ env.ARC_NAME }}
 
-  build-ubuntu-latest-pcp:
+# zip release begin
+    - name: Create Zip Archive Release - ALL
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}-ALL.zip'
+        directory: '.'
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+
+    - name: Publish
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-ALL
+        files: |
+          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+# zip release end
+
+  ubuntu-latest-pcp:
     # we want PCP v5.2.3+
     runs-on: ubuntu-22.04
     steps:
@@ -324,7 +449,32 @@ jobs:
         files: |
           ${{ env.ARC_NAME }}
 
-  build-ubuntu-latest-clang-analyzer:
+# zip release begin
+    - name: Create Zip Archive Release - ALL
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}-ALL.zip'
+        directory: '.'
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+
+    - name: Publish
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-ALL
+        files: |
+          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+# zip release end
+
+  ubuntu-latest-clang-analyzer:
     runs-on: ubuntu-latest
     env:
       CC: clang-16
@@ -350,7 +500,7 @@ jobs:
     - name: Build
       run: scan-build-16 -analyze-headers --status-bugs make -j"$(nproc)"
 
-  build-ubuntu-latest-clang-sanitizer:
+  ubuntu-latest-clang-sanitizer:
     runs-on: ubuntu-latest
     env:
       CC: clang-16
@@ -397,7 +547,7 @@ jobs:
     - name: Run sanitized htop (4)
       run: ./htop -d 1 -n 50
 
-  build-macos-latest-clang:
+  macos-latest-clang:
     runs-on: macOS-latest
     env:
       CC: clang
@@ -444,3 +594,28 @@ jobs:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
           ${{ env.ARC_NAME }}
+
+# zip release begin
+    - name: Create Zip Archive Release - ALL
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/zip-release@v2
+      with:
+        type: 'zip'
+        filename: '${{ env.ARC_NAME }}-ALL.zip'
+        directory: '.'
+        exclusions: ''
+        recursive_exclusions: ''
+        path: '.'
+        env_variable: 'ZIP_RELEASE_ARCHIVE_ALL'
+      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+
+    - name: Publish
+      if: ${{ inputs.CreateZipAll }}
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-ALL
+        files: |
+          ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
+# zip release end
