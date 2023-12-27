@@ -1,4 +1,4 @@
-# 2023-12-28 09:30
+# 2023-12-28 09:00
 #
 #
 name: act-build
@@ -68,7 +68,7 @@ jobs:
         type: 'zip'
         filename: '${{ env.ARC_NAME }}.zip'
         directory: '_release_'
-        path.
+        path: '.'
         exclusions: ''
         recursive_exclusions: ''
         path: '.'
@@ -140,7 +140,7 @@ jobs:
         type: 'zip'
         filename: '${{ env.ARC_NAME }}.zip'
         directory: '_release_'
-        path.
+        path: '.'
         exclusions: ''
         recursive_exclusions: ''
         path: '.'
@@ -208,7 +208,7 @@ jobs:
         type: 'zip'
         filename: '${{ env.ARC_NAME }}.zip'
         directory: '_release_'
-        path.
+        path: '.'
         exclusions: ''
         recursive_exclusions: ''
         path: '.'
@@ -305,7 +305,7 @@ jobs:
         type: 'zip'
         filename: '${{ env.ARC_NAME }}.zip'
         directory: '_release_'
-        path.
+        path: '.'
         exclusions: ''
         recursive_exclusions: ''
         path: '.'
@@ -373,7 +373,7 @@ jobs:
         type: 'zip'
         filename: '${{ env.ARC_NAME }}.zip'
         directory: '_release_'
-        path.
+        path: '.'
         exclusions: ''
         recursive_exclusions: ''
         path: '.'
@@ -438,7 +438,7 @@ jobs:
         type: 'zip'
         filename: '${{ env.ARC_NAME }}.zip'
         directory: '_release_'
-        path.
+        path: '.'
         exclusions: ''
         recursive_exclusions: ''
         path: '.'
@@ -577,7 +577,7 @@ jobs:
         type: 'zip'
         filename: '${{ env.ARC_NAME }}.zip'
         directory: '_release_'
-        path.
+        path: '.'
         exclusions: ''
         recursive_exclusions: ''
         path: '.'
