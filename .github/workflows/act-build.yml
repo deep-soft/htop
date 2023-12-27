@@ -18,7 +18,7 @@ env:
 
 jobs:
   ubuntu-latest-minimal-gcc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - name: Checkout
       uses: deep-soft/checkout@v4
@@ -87,7 +87,7 @@ jobs:
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
 
   ubuntu-latest-minimal-clang:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       CC: clang-16
     steps:
@@ -158,7 +158,7 @@ jobs:
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
 
   ubuntu-latest-full-featured-gcc:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Enable LTO, might trigger additional warnings on advanced inlining
     env:
       CFLAGS: -O3 -g -flto
@@ -250,7 +250,7 @@ jobs:
 # zip release end
 
   ubuntu-latest-full-featured-clang:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       CC: clang-16
     steps:
@@ -321,7 +321,7 @@ jobs:
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities'
 
   ubuntu-latest-gcc-static:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     # Enable LTO, might trigger additional warnings on advanced inlining
     env:
       CFLAGS: -O3 -g -flto
@@ -452,7 +452,7 @@ jobs:
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-pcp --enable-unicode'
 
   ubuntu-latest-clang-analyzer:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       CC: clang-16
     steps:
@@ -478,7 +478,7 @@ jobs:
       run: scan-build-16 -analyze-headers --status-bugs make -j"$(nproc)"
 
   ubuntu-latest-clang-sanitizer:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     env:
       CC: clang-16
       CFLAGS: '-O1 -g -ftrivial-auto-var-init=pattern -fsanitize=address -fsanitize-address-use-after-scope -fsanitize-address-use-after-return=always -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer -fsanitize=float-divide-by-zero -fsanitize=local-bounds'
