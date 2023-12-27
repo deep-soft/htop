@@ -32,7 +32,7 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="gcc-minimal";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: Install Dependencies
@@ -103,7 +103,7 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="clang-minimal";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: install clang repo
@@ -176,7 +176,7 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="gcc-full";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: Install Dependencies
@@ -266,7 +266,7 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="clang-full";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: install clang repo
@@ -339,7 +339,7 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="gcc-static";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: Install Dependencies
@@ -403,7 +403,7 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="pcp";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: Install Dependencies
@@ -541,7 +541,7 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="macOS";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
 
     - name: Install Dependencies
