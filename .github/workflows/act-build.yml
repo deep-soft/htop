@@ -11,49 +11,117 @@ env:
   # Enable format attributes in ncurses headers
   # Enable fortified memory/string handling
   CPPFLAGS: -DGCC_PRINTF -DGCC_SCANF -D_FORTIFY_SOURCE=2
+  PROG_NAME:    'htop'
+  PROG_VERSION: '3.3.0'
+  TAG_NAME:     'htop'
+  TAG_VERSION:  '3.3.0'
 
 jobs:
   build-ubuntu-latest-minimal-gcc:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: deep-soft/checkout@v4
+
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev
+
     - name: Bootstrap
       run: ./autogen.sh
+
     - name: Configure
       run: ./configure --enable-werror --enable-affinity --disable-unicode --disable-sensors || (cat config.log; exit 1)
+
     - name: Enable compatibility modes
       run: |
         sed -i 's/#define HAVE_FSTATAT 1/#undef HAVE_FSTATAT/g' config.h
         sed -i 's/#define HAVE_OPENAT 1/#undef HAVE_OPENAT/g' config.h
         sed -i 's/#define HAVE_READLINKAT 1/#undef HAVE_READLINKAT/g' config.h
+
     - name: Build
       run: make -k
+
     - name: Distcheck
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
+
+    - name: Get version
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+
+    - name: Rename arc
+      run: |
+        add_to_name="minimal-gcc";
+        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
+        mv $org_name $arc_name;
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Publish
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
+        files: |
+          ${{ env.ARC_NAME }}
 
   build-ubuntu-latest-minimal-clang:
     runs-on: ubuntu-latest
     env:
       CC: clang-16
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: deep-soft/checkout@v4
+
     - name: install clang repo
       run: |
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key 2>/dev/null | sudo apt-key add -
         sudo add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main' -y
         sudo apt-get update -q
+
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends clang-16 libncursesw5-dev
+
     - name: Bootstrap
       run: ./autogen.sh
+
     - name: Configure
       run: ./configure --enable-werror --enable-affinity --disable-unicode --disable-sensors || ( cat config.log; exit 1; )
+
     - name: Build
       run: make -k
+
     - name: Distcheck
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
+
+    - name: Get version
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+
+    - name: Rename arc
+      run: |
+        add_to_name="minimal-clang";
+        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
+        mv $org_name $arc_name;
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Publish
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
+        files: |
+          ${{ env.ARC_NAME }}
 
   build-ubuntu-latest-full-featured-gcc:
     runs-on: ubuntu-latest
@@ -62,39 +130,102 @@ jobs:
       CFLAGS: -O3 -g -flto
       LDFLAGS: -O3 -g -flto -Wl,--as-needed
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: deep-soft/checkout@v4
+
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev
+
     - name: Bootstrap
       run: ./autogen.sh
+
     - name: Configure
       run: ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities || ( cat config.log; exit 1; )
+
     - name: Build
       run: make -k
+
     - name: Distcheck
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities'
+
+    - name: Get version
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+
+    - name: Rename arc
+      run: |
+        add_to_name="full-gcc";
+        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
+        mv $org_name $arc_name;
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Publish
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
+        files: |
+          ${{ env.ARC_NAME }}
 
   build-ubuntu-latest-full-featured-clang:
     runs-on: ubuntu-latest
     env:
       CC: clang-16
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: deep-soft/checkout@v4
+
     - name: install clang repo
       run: |
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key 2>/dev/null | sudo apt-key add -
         sudo add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main' -y
         sudo apt-get update -q
+
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends clang-16 libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev
+
     - name: Bootstrap
       run: ./autogen.sh
+
     - name: Configure
       run: ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities || ( cat config.log; exit 1; )
+
     - name: Build
       run: make -k
+
     - name: Distcheck
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities'
+
+    - name: Get version
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+
+    - name: Rename arc
+      run: |
+        add_to_name="full-clang";
+        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
+        mv $org_name $arc_name;
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Publish
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
+        files: |
+          ${{ env.ARC_NAME }}
 
   build-ubuntu-latest-gcc-static:
     runs-on: ubuntu-latest
@@ -103,49 +234,119 @@ jobs:
       CFLAGS: -O3 -g -flto
       LDFLAGS: -O3 -g -flto
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: deep-soft/checkout@v4
+
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev libtinfo-dev libgpm-dev libsensors4-dev libcap-dev
+
     - name: Bootstrap
       run: ./autogen.sh
+
     - name: Configure
       run: ./configure --enable-static --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --disable-hwloc --disable-delayacct --enable-sensors --enable-capabilities || ( cat config.log; exit 1; )
+
     - name: Build
       run: make -k
+
     - name: Distcheck
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-static --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --disable-hwloc --disable-delayacct --enable-sensors --enable-capabilities'
+
+    - name: Get version
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+
+    - name: Rename arc
+      run: |
+        add_to_name="static";
+        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
+        mv $org_name $arc_name;
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Publish
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
+        files: |
+          ${{ env.ARC_NAME }}
 
   build-ubuntu-latest-pcp:
     # we want PCP v5.2.3+
     runs-on: ubuntu-22.04
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: deep-soft/checkout@v4
+
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libpcp3-dev libncursesw5-dev libtinfo-dev libgpm-dev
+
     - name: Bootstrap
       run: ./autogen.sh
+
     - name: Configure
       run: ./configure --enable-werror --enable-pcp --enable-unicode || ( cat config.log; exit 1; )
+
     - name: Build
       run: make -k
+
+    - name: Distcheck
+      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-pcp --enable-unicode'
+
+    - name: Get version
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+
+    - name: Rename arc
+      run: |
+        add_to_name="pcp";
+        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
+        mv $org_name $arc_name;
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Publish
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
+        files: |
+          ${{ env.ARC_NAME }}
 
   build-ubuntu-latest-clang-analyzer:
     runs-on: ubuntu-latest
     env:
       CC: clang-16
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: deep-soft/checkout@v4
+
     - name: install clang repo
       run: |
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key 2>/dev/null | sudo apt-key add -
         sudo add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main' -y
         sudo apt-get update -q
+
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends clang-16 clang-tools-16 libncursesw5-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev
+
     - name: Bootstrap
       run: ./autogen.sh
+
     - name: Configure
       run: scan-build-16 -analyze-headers --status-bugs ./configure --enable-debug --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-delayacct --enable-sensors --enable-capabilities || ( cat config.log; exit 1; )
+
     - name: Build
       run: scan-build-16 -analyze-headers --status-bugs make -j"$(nproc)"
 
@@ -160,28 +361,39 @@ jobs:
       TERM: xterm-color
       HTOPRC: .github/workflows/htoprc
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: deep-soft/checkout@v4
+
     - name: install clang repo
       run: |
         wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key 2>/dev/null | sudo apt-key add -
         sudo add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main' -y
         sudo apt-get update -q
+
     - name: Install LLVM Toolchain
       run: sudo apt-get install --no-install-recommends clang-16 libclang-rt-16-dev llvm-16
+
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev
+
     - name: Bootstrap
       run: ./autogen.sh
+
     - name: Configure
       run: ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities || ( cat config.log; exit 1; )
+
     - name: Build
       run: make -k
+
     - name: Run sanitized htop (1)
       run: ./htop -h
+
     - name: Run sanitized htop (2)
       run: ./htop -n 5
+
     - name: Run sanitized htop (3)
       run: ./htop -n 5 -t
+
     - name: Run sanitized htop (4)
       run: ./htop -d 1 -n 50
 
@@ -190,21 +402,45 @@ jobs:
     env:
       CC: clang
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: deep-soft/checkout@v4
+
     - name: Install Dependencies
       run: brew install automake pkg-config
+
     - name: Bootstrap
       run: ./autogen.sh
+
     - name: Configure
       run: ./configure --enable-werror || ( cat config.log; exit 1; )
+
     - name: Build
       run: make -k
+
     - name: Distcheck
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror"
 
-  whitespace_check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: check-whitespaces
-        run: git diff-tree --check $(git hash-object -t tree /dev/null) HEAD
+    - name: Get version
+      shell: bash
+      run: |
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
+        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
+        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
+
+    - name: Rename arc
+      run: |
+        add_to_name="minimal-gcc";
+        org_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}.tar.gz";
+        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name.tar.gz";
+        mv $org_name $arc_name;
+        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Publish
+      continue-on-error: true
+      uses: deep-soft/action-gh-release@v1
+      with:
+        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
+        files: |
+          ${{ env.ARC_NAME }}
