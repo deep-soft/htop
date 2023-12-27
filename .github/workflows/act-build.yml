@@ -6,6 +6,12 @@ name: act-build
 #on: [ push, pull_request, workflow_dispatch ]
 on:
   workflow_dispatch:
+    inputs:
+      CreateZipAll:
+        description: CreateZipAll
+        type: boolean
+        default: false
+        required: true
 
 env:
   # Enable format attributes in ncurses headers
