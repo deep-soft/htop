@@ -12,9 +12,9 @@ env:
   # Enable fortified memory/string handling
   CPPFLAGS: -DGCC_PRINTF -DGCC_SCANF -D_FORTIFY_SOURCE=2
   PROG_NAME:    'htop'
-  PROG_VERSION: '3.3.0'
+  PROG_VERSION: '2.2.0'
   TAG_NAME:     'htop'
-  TAG_VERSION:  '3.3.0'
+  TAG_VERSION:  '2.2.0'
 
 jobs:
   ubuntu-latest-minimal-gcc:
@@ -58,78 +58,6 @@ jobs:
       run: |
         mkdir _release_
         cp htop     _release_ || true;
-        cp pcp-htop _release_ || true;
-        cp readme   _release_ || true;
-
-    - name: Create Zip Archive Release
-      continue-on-error: true
-      uses: deep-soft/zip-release@v2
-      with:
-        type: 'zip'
-        filename: '${{ env.ARC_NAME }}.zip'
-        directory: '_release_'
-        exclusions: ''
-        recursive_exclusions: ''
-        path: '.'
-        env_variable: 'ZIP_RELEASE_ARCHIVE'
-      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
-
-    - name: Publish
-      continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
-      with:
-        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
-        files: |
-          ${{ env.ZIP_RELEASE_ARCHIVE }}
-# zip release end
-
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS="--enable-werror --enable-affinity --disable-unicode --disable-sensors"
-
-  ubuntu-latest-minimal-clang:
-    runs-on: ubuntu-20.04
-    env:
-      CC: clang-16
-    steps:
-    - name: Checkout
-      uses: deep-soft/checkout@v4
-
-    - name: Get version, set ARC_NAME
-      shell: bash
-      run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "," '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
-        add_to_name="clang-minimal";
-        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
-
-    - name: install clang repo
-      run: |
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key 2>/dev/null | sudo apt-key add -
-        sudo add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main' -y
-        sudo apt-get update -q
-
-    - name: Install Dependencies
-      run: sudo apt-get install --no-install-recommends clang-16 libncursesw5-dev
-
-    - name: Bootstrap
-      run: ./autogen.sh
-
-    - name: Configure
-      run: ./configure --enable-werror --enable-affinity --disable-unicode --disable-sensors || ( cat config.log; exit 1; )
-
-    - name: Build
-      run: make -k
-
-# zip release begin
-    - name: Prepare files for Zip Archive Release
-      run: |
-        mkdir _release_
-        cp htop     _release_ || true;
-        cp pcp-htop _release_ || true;
         cp readme   _release_ || true;
 
     - name: Create Zip Archive Release
@@ -196,7 +124,6 @@ jobs:
       run: |
         mkdir _release_
         cp htop     _release_ || true;
-        cp pcp-htop _release_ || true;
         cp readme   _release_ || true;
 
     - name: Create Zip Archive Release
@@ -249,77 +176,6 @@ jobs:
           ${{ env.ZIP_RELEASE_ARCHIVE_ALL }}
 # zip release end
 
-  ubuntu-latest-full-featured-clang:
-    runs-on: ubuntu-20.04
-    env:
-      CC: clang-16
-    steps:
-    - name: Checkout
-      uses: deep-soft/checkout@v4
-
-    - name: Get version, set ARC_NAME
-      shell: bash
-      run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "," '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
-        add_to_name="clang-full";
-        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
-
-    - name: install clang repo
-      run: |
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key 2>/dev/null | sudo apt-key add -
-        sudo add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main' -y
-        sudo apt-get update -q
-
-    - name: Install Dependencies
-      run: sudo apt-get install --no-install-recommends clang-16 libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev
-
-    - name: Bootstrap
-      run: ./autogen.sh
-
-    - name: Configure
-      run: ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities || ( cat config.log; exit 1; )
-
-    - name: Build
-      run: make -k
-
-# zip release begin
-    - name: Prepare files for Zip Archive Release
-      run: |
-        mkdir _release_
-        cp htop     _release_ || true;
-        cp pcp-htop _release_ || true;
-        cp readme   _release_ || true;
-
-    - name: Create Zip Archive Release
-      continue-on-error: true
-      uses: deep-soft/zip-release@v2
-      with:
-        type: 'zip'
-        filename: '${{ env.ARC_NAME }}.zip'
-        directory: '_release_'
-        exclusions: ''
-        recursive_exclusions: ''
-        path: '.'
-        env_variable: 'ZIP_RELEASE_ARCHIVE'
-      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
-
-    - name: Publish
-      continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
-      with:
-        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
-        files: |
-          ${{ env.ZIP_RELEASE_ARCHIVE }}
-# zip release end
-
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities'
-
   ubuntu-latest-gcc-static:
     runs-on: ubuntu-20.04
     # Enable LTO, might trigger additional warnings on advanced inlining
@@ -359,7 +215,6 @@ jobs:
       run: |
         mkdir _release_
         cp htop     _release_ || true;
-        cp pcp-htop _release_ || true;
         cp readme   _release_ || true;
 
     - name: Create Zip Archive Release
@@ -386,143 +241,6 @@ jobs:
 
     - name: Distcheck
       run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-static --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --disable-hwloc --disable-delayacct --enable-sensors --enable-capabilities'
-
-  ubuntu-latest-pcp:
-    # we want PCP v5.2.3+
-    runs-on: ubuntu-22.04
-    steps:
-    - name: Checkout
-      uses: deep-soft/checkout@v4
-
-    - name: Get version, set ARC_NAME
-      shell: bash
-      run: |
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
-        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "," '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
-        echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
-        echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
-        add_to_name="pcp";
-        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
-        echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
-
-    - name: Install Dependencies
-      run: sudo apt-get install --no-install-recommends libpcp3-dev libncursesw5-dev libtinfo-dev libgpm-dev
-
-    - name: Bootstrap
-      run: ./autogen.sh
-
-    - name: Configure
-      run: ./configure --enable-werror --enable-pcp --enable-unicode || ( cat config.log; exit 1; )
-
-    - name: Build
-      run: make -k
-
-# zip release begin
-    - name: Prepare files for Zip Archive Release
-      run: |
-        mkdir _release_
-        cp htop     _release_ || true;
-        cp pcp-htop _release_ || true;
-        cp readme   _release_ || true;
-
-    - name: Create Zip Archive Release
-      continue-on-error: true
-      uses: deep-soft/zip-release@v2
-      with:
-        type: 'zip'
-        filename: '${{ env.ARC_NAME }}.zip'
-        directory: '_release_'
-        exclusions: ''
-        recursive_exclusions: ''
-        path: '.'
-        env_variable: 'ZIP_RELEASE_ARCHIVE'
-      # archive name is ${{ env.ZIP_RELEASE_ARCHIVE }}
-
-    - name: Publish
-      continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
-      with:
-        tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
-        files: |
-          ${{ env.ZIP_RELEASE_ARCHIVE }}
-# zip release end
-
-    - name: Distcheck
-      run: make distcheck DISTCHECK_CONFIGURE_FLAGS='--enable-werror --enable-pcp --enable-unicode'
-
-  ubuntu-latest-clang-analyzer:
-    runs-on: ubuntu-20.04
-    env:
-      CC: clang-16
-    steps:
-    - name: Checkout
-      uses: deep-soft/checkout@v4
-
-    - name: install clang repo
-      run: |
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key 2>/dev/null | sudo apt-key add -
-        sudo add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main' -y
-        sudo apt-get update -q
-
-    - name: Install Dependencies
-      run: sudo apt-get install --no-install-recommends clang-16 clang-tools-16 libncursesw5-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev
-
-    - name: Bootstrap
-      run: ./autogen.sh
-
-    - name: Configure
-      run: scan-build-16 -analyze-headers --status-bugs ./configure --enable-debug --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-delayacct --enable-sensors --enable-capabilities || ( cat config.log; exit 1; )
-
-    - name: Build
-      run: scan-build-16 -analyze-headers --status-bugs make -j"$(nproc)"
-
-  ubuntu-latest-clang-sanitizer:
-    runs-on: ubuntu-20.04
-    env:
-      CC: clang-16
-      CFLAGS: '-O1 -g -ftrivial-auto-var-init=pattern -fsanitize=address -fsanitize-address-use-after-scope -fsanitize-address-use-after-return=always -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer -fsanitize=float-divide-by-zero -fsanitize=local-bounds'
-      LDFLAGS: '-ftrivial-auto-var-init=pattern -fsanitize=address -fsanitize-address-use-after-scope -fsanitize-address-use-after-return=always -fno-omit-frame-pointer -fsanitize=undefined -fsanitize=nullability -fsanitize=implicit-conversion -fsanitize=integer -fsanitize=float-divide-by-zero -fsanitize=local-bounds'
-      ASAN_OPTIONS: strict_string_checks=1:detect_stack_use_after_return=1:check_initialization_order=1:strict_init_order=1
-      UBSAN_OPTIONS: print_stacktrace=1:print_summary=1:halt_on_error=1
-      TERM: xterm-color
-      HTOPRC: .github/workflows/htoprc
-    steps:
-    - name: Checkout
-      uses: deep-soft/checkout@v4
-
-    - name: install clang repo
-      run: |
-        wget -O - https://apt.llvm.org/llvm-snapshot.gpg.key 2>/dev/null | sudo apt-key add -
-        sudo add-apt-repository 'deb http://apt.llvm.org/focal/ llvm-toolchain-focal-16 main' -y
-        sudo apt-get update -q
-
-    - name: Install LLVM Toolchain
-      run: sudo apt-get install --no-install-recommends clang-16 libclang-rt-16-dev llvm-16
-
-    - name: Install Dependencies
-      run: sudo apt-get install --no-install-recommends libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev
-
-    - name: Bootstrap
-      run: ./autogen.sh
-
-    - name: Configure
-      run: ./configure --enable-werror --enable-openvz --enable-vserver --enable-ancient-vserver --enable-unicode --enable-hwloc --enable-delayacct --enable-sensors --enable-capabilities || ( cat config.log; exit 1; )
-
-    - name: Build
-      run: make -k
-
-    - name: Run sanitized htop (1)
-      run: ./htop -h
-
-    - name: Run sanitized htop (2)
-      run: ./htop -n 5
-
-    - name: Run sanitized htop (3)
-      run: ./htop -n 5 -t
-
-    - name: Run sanitized htop (4)
-      run: ./htop -d 1 -n 50
 
   macos-latest-clang:
     runs-on: macOS-latest
@@ -561,7 +279,6 @@ jobs:
       run: |
         mkdir _release_
         cp htop     _release_ || true;
-        cp pcp-htop _release_ || true;
         cp readme   _release_ || true;
 
     - name: Create Zip Archive Release
