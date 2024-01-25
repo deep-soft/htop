@@ -426,14 +426,14 @@ static bool LinuxProcessTable_readStatusFile(Process* process, openat_arg_t proc
       } else if (String_startsWith(buffer, "voluntary_ctxt_switches:")) {
          unsigned long vctxt;
          int ok = sscanf(buffer, "voluntary_ctxt_switches:\t%lu", &vctxt);
-         if (ok >= 1) {
+         if (ok == 1) {
             ctxt += vctxt;
          }
 
       } else if (String_startsWith(buffer, "nonvoluntary_ctxt_switches:")) {
          unsigned long nvctxt;
          int ok = sscanf(buffer, "nonvoluntary_ctxt_switches:\t%lu", &nvctxt);
-         if (ok >= 1) {
+         if (ok == 1) {
             ctxt += nvctxt;
          }
 
@@ -441,14 +441,14 @@ static bool LinuxProcessTable_readStatusFile(Process* process, openat_arg_t proc
       } else if (String_startsWith(buffer, "VxID:")) {
          int vxid;
          int ok = sscanf(buffer, "VxID:\t%32d", &vxid);
-         if (ok >= 1) {
+         if (ok == 1) {
             lp->vxid = vxid;
          }
 #ifdef HAVE_ANCIENT_VSERVER
       } else if (String_startsWith(buffer, "s_context:")) {
          int vxid;
          int ok = sscanf(buffer, "s_context:\t%32d", &vxid);
-         if (ok >= 1) {
+         if (ok == 1) {
             lp->vxid = vxid;
          }
 #endif /* HAVE_ANCIENT_VSERVER */
@@ -938,7 +938,7 @@ static void LinuxProcessTable_readOomData(LinuxProcess* process, openat_arg_t pr
    if (fgets(buffer, PROC_LINE_LENGTH, file)) {
       unsigned int oom;
       int ok = sscanf(buffer, "%u", &oom);
-      if (ok >= 1) {
+      if (ok == 1) {
          process->oom = oom;
       }
    }
@@ -985,9 +985,6 @@ static void LinuxProcessTable_readSecattrData(LinuxProcess* process, openat_arg_
 
    Row_updateFieldWidth(SECATTR, strlen(buffer));
 
-   if (process->secattr && String_eq(process->secattr, buffer)) {
-      return;
-   }
    free_and_xStrdup(&process->secattr, buffer);
 }
 
@@ -1007,9 +1004,6 @@ static void LinuxProcessTable_readCwd(LinuxProcess* process, openat_arg_t procFd
    }
 
    pathBuffer[r] = '\0';
-
-   if (process->super.procCwd && String_eq(process->super.procCwd, pathBuffer))
-      return;
 
    free_and_xStrdup(&process->super.procCwd, pathBuffer);
 }
@@ -1495,7 +1489,7 @@ static bool LinuxProcessTable_recurseProcTree(LinuxProcessTable* this, openat_ar
 
       char statCommand[MAX_NAME + 1];
       unsigned long long int lasttimes = (lp->utime + lp->stime);
-      unsigned long int tty_nr = proc->tty_nr;
+      unsigned long int last_tty_nr = proc->tty_nr;
       if (!LinuxProcessTable_readStatFile(lp, procFd, lhost, scanMainThread, statCommand, sizeof(statCommand)))
          goto errorReadingProcess;
 
@@ -1503,7 +1497,7 @@ static bool LinuxProcessTable_recurseProcTree(LinuxProcessTable* this, openat_ar
          proc->isKernelThread = true;
       }
 
-      if (tty_nr != proc->tty_nr && this->ttyDrivers) {
+      if (last_tty_nr != proc->tty_nr && this->ttyDrivers) {
          free(proc->tty_name);
          proc->tty_name = LinuxProcessTable_updateTtyDevice(this->ttyDrivers, proc->tty_nr);
       }
