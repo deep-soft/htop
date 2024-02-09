@@ -76,7 +76,7 @@ jobs:
 
     - name: Publish
       continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
+      uses: deep-soft/action-gh-release@v2.1
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
@@ -147,7 +147,7 @@ jobs:
 
     - name: Publish
       continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
+      uses: deep-soft/action-gh-release@v2.1
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
@@ -214,7 +214,7 @@ jobs:
 
     - name: Publish
       continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
+      uses: deep-soft/action-gh-release@v2.1
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
@@ -242,7 +242,7 @@ jobs:
     - name: Publish
       if: ${{ inputs.CreateZipAll }}
       continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
+      uses: deep-soft/action-gh-release@v2.1
       with:
         tag_name: ${{ env.TAG_NAME }}-ALL
         files: |
@@ -310,7 +310,7 @@ jobs:
 
     - name: Publish
       continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
+      uses: deep-soft/action-gh-release@v2.1
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
@@ -377,7 +377,7 @@ jobs:
 
     - name: Publish
       continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
+      uses: deep-soft/action-gh-release@v2.1
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
@@ -441,7 +441,7 @@ jobs:
 
     - name: Publish
       continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
+      uses: deep-soft/action-gh-release@v2.1
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
@@ -579,7 +579,7 @@ jobs:
 
     - name: Publish
       continue-on-error: true
-      uses: deep-soft/action-gh-release@v1
+      uses: deep-soft/action-gh-release@v2.1
       with:
         tag_name: ${{ env.TAG_NAME }}-${{ env.TAG_VERSION }}
         files: |
