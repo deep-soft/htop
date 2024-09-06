@@ -33,8 +33,15 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="gcc-minimal";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Print version
+      shell: bash
+      run: |
+        echo "PROG_NAME    =" ${{ env.PROG_NAME }}
+        echo "PROG_VERSION =" ${{ env.PROG_VERSION }}
+        echo "ARC_NAME     =" ${{ env.ARC_NAME }}
 
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev
@@ -105,8 +112,15 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="clang-minimal";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Print version
+      shell: bash
+      run: |
+        echo "PROG_NAME    =" ${{ env.PROG_NAME }}
+        echo "PROG_VERSION =" ${{ env.PROG_VERSION }}
+        echo "ARC_NAME     =" ${{ env.ARC_NAME }}
 
     - name: install clang repo
       run: |
@@ -179,8 +193,15 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="gcc-full";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Print version
+      shell: bash
+      run: |
+        echo "PROG_NAME    =" ${{ env.PROG_NAME }}
+        echo "PROG_VERSION =" ${{ env.PROG_VERSION }}
+        echo "ARC_NAME     =" ${{ env.ARC_NAME }}
 
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev libhwloc-dev libnl-3-dev libnl-genl-3-dev libsensors4-dev libcap-dev
@@ -270,8 +291,15 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="clang-full";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Print version
+      shell: bash
+      run: |
+        echo "PROG_NAME    =" ${{ env.PROG_NAME }}
+        echo "PROG_VERSION =" ${{ env.PROG_VERSION }}
+        echo "ARC_NAME     =" ${{ env.ARC_NAME }}
 
     - name: install clang repo
       run: |
@@ -344,8 +372,15 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="gcc-static";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Print version
+      shell: bash
+      run: |
+        echo "PROG_NAME    =" ${{ env.PROG_NAME }}
+        echo "PROG_VERSION =" ${{ env.PROG_VERSION }}
+        echo "ARC_NAME     =" ${{ env.ARC_NAME }}
 
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libncursesw5-dev libtinfo-dev libgpm-dev libsensors4-dev libcap-dev
@@ -409,8 +444,15 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="pcp";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Print version
+      shell: bash
+      run: |
+        echo "PROG_NAME    =" ${{ env.PROG_NAME }}
+        echo "PROG_VERSION =" ${{ env.PROG_VERSION }}
+        echo "ARC_NAME     =" ${{ env.ARC_NAME }}
 
     - name: Install Dependencies
       run: sudo apt-get install --no-install-recommends libpcp3-dev libncursesw5-dev libtinfo-dev libgpm-dev
@@ -548,8 +590,15 @@ jobs:
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="macOS";
-        arc_name="${{ env.PROG_NAME }}-${{ env.PROG_VERSION }}-$add_to_name";
+        arc_name="${{ env.PROG_NAME }}-$PROG_VERSION-$add_to_name";
         echo "ARC_NAME=$arc_name" >> $GITHUB_ENV;
+
+    - name: Print version
+      shell: bash
+      run: |
+        echo "PROG_NAME    =" ${{ env.PROG_NAME }}
+        echo "PROG_VERSION =" ${{ env.PROG_VERSION }}
+        echo "ARC_NAME     =" ${{ env.ARC_NAME }}
 
     - name: Install Dependencies
       run: brew install automake pkg-config
