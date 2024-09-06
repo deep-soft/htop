@@ -9,7 +9,9 @@ in the source distribution for its full text.
 
 #include "RichString.h"
 
+#include <assert.h>
 #include <ctype.h>
+#include <limits.h> // IWYU pragma: keep
 #include <stdlib.h>
 #include <string.h>
 
@@ -20,18 +22,26 @@ in the source distribution for its full text.
 #define charBytes(n) (sizeof(CharType) * (n))
 
 static void RichString_extendLen(RichString* this, int len) {
-   if (this->chlen <= RICHSTRING_MAXLEN) {
+   if (this->chptr == this->chstr) {
+      // String is in internal buffer
       if (len > RICHSTRING_MAXLEN) {
+         // Copy from internal buffer to allocated string
          this->chptr = xMalloc(charBytes(len + 1));
          memcpy(this->chptr, this->chstr, charBytes(this->chlen));
+      } else {
+         // Still fits in internal buffer, do nothing
+         assert(this->chlen <= RICHSTRING_MAXLEN);
       }
    } else {
-      if (len <= RICHSTRING_MAXLEN) {
+      // String is managed externally
+      if (len > RICHSTRING_MAXLEN) {
+         // Just reallocate the buffer accordingly
+         this->chptr = xRealloc(this->chptr, charBytes(len + 1));
+      } else {
+         // Move string into internal buffer and free resources
          memcpy(this->chstr, this->chptr, charBytes(len));
          free(this->chptr);
          this->chptr = this->chstr;
-      } else {
-         this->chptr = xRealloc(this->chptr, charBytes(len + 1));
       }
    }
 
@@ -54,7 +64,7 @@ void RichString_rewind(RichString* this, int count) {
 
 #ifdef HAVE_LIBNCURSESW
 
-static size_t mbstowcs_nonfatal(wchar_t* dest, const char* src, size_t n) {
+static size_t mbstowcs_nonfatal(wchar_t* restrict dest, const char* restrict src, size_t n) {
    size_t written = 0;
    mbstate_t ps = { 0 };
    bool broken = false;
@@ -136,7 +146,8 @@ static inline int RichString_writeFromAscii(RichString* this, int attrs, const c
    int newLen = from + len;
    RichString_setLen(this, newLen);
    for (int i = from, j = 0; i < newLen; i++, j++) {
-      this->chptr[i] = (CharType) { .attr = attrs & 0xffffff, .chars = { (isprint(data[j]) ? data[j] : L'\xFFFD') } };
+      assert((unsigned char)data[j] <= SCHAR_MAX);
+      this->chptr[i] = (CharType) { .attr = attrs & 0xffffff, .chars = { (isprint((unsigned char)data[j]) ? data[j] : L'\xFFFD') } };
    }
 
    return len;

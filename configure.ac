@@ -2,11 +2,19 @@
 # Process this file with autoconf to produce a configure script.
 
 # ----------------------------------------------------------------------
+# Build version string.
+# ----------------------------------------------------------------------
+
+m4_define([htop_git_version],
+  m4_normalize(m4_esyscmd([git describe --abbrev=7 --dirty --always --tags 2> /dev/null || echo ''])))
+m4_define([htop_release_version], [3.4.0-dev])
+
+# ----------------------------------------------------------------------
 # Autoconf initialization.
 # ----------------------------------------------------------------------
 
 AC_PREREQ([2.69])
-AC_INIT([htop], [3.4.0-dev], [htop@groups.io], [], [https://htop.dev/])
+AC_INIT([htop], [m4_join([-],m4_defn([htop_release_version]),m4_defn([htop_git_version]))], [htop@groups.io], [], [https://htop.dev/])
 
 AC_CONFIG_SRCDIR([htop.c])
 AC_CONFIG_AUX_DIR([build-aux])
@@ -189,6 +197,7 @@ CFLAGS="$CFLAGS -Wno-error -Werror=attributes"
 AC_COMPILE_IFELSE([
    AC_LANG_SOURCE(
       [
+         /* Attribute supported in GCC 4.3 or later */
          __attribute__((alloc_size(1))) char* my_alloc(int size) { return 0; }
       ],[]
    )],
@@ -203,6 +212,7 @@ CFLAGS="$CFLAGS -Wno-error -Werror=attributes"
 AC_COMPILE_IFELSE([
    AC_LANG_SOURCE(
       [
+         /* Attribute supported in GCC 10 or later */
          __attribute__((access(read_only, 1, 2))) extern int foo(const char* str, unsigned len);
       ],[]
    )],
@@ -223,6 +233,21 @@ AC_COMPILE_IFELSE([
       ]]
    )],
    AC_DEFINE([HAVE_ATTR_NONNULL], 1, [The nonnull attribute is supported.])
+   AC_MSG_RESULT(yes),
+   AC_MSG_RESULT(no))
+CFLAGS="$old_CFLAGS"
+
+AC_MSG_CHECKING(for returns_nonnull)
+old_CFLAGS="$CFLAGS"
+CFLAGS="$CFLAGS -Wno-error -Werror=attributes"
+AC_COMPILE_IFELSE([
+   AC_LANG_SOURCE(
+      [[
+         /* Attribute supported in GCC 4.9 or later */
+         __attribute__((returns_nonnull)) void* foo(void);
+      ]]
+   )],
+   AC_DEFINE([HAVE_ATTR_RETNONNULL], 1, [The returns_nonnull attribute is supported.])
    AC_MSG_RESULT(yes),
    AC_MSG_RESULT(no))
 CFLAGS="$old_CFLAGS"
@@ -264,6 +289,13 @@ AC_LINK_IFELSE([
    fi],
    [AC_MSG_RESULT(no)
    AC_MSG_ERROR([can not find required macros: NAN, isgreater() and isgreaterequal()])])
+
+AC_MSG_CHECKING(for __builtin_ctz)
+AC_COMPILE_IFELSE([
+   AC_LANG_PROGRAM([], [[__builtin_ctz(1); /* Supported in GCC 3.4 or later */]])],
+   [AC_DEFINE([HAVE_BUILTIN_CTZ], 1, [Define to 1 if the compiler supports '__builtin_ctz' function.])
+   AC_MSG_RESULT(yes)],
+   AC_MSG_RESULT(no))
 
 # ----------------------------------------------------------------------
 
@@ -569,6 +601,19 @@ if test -n "$with_os_release" && test ! -f "$with_os_release"; then
 fi
 AC_DEFINE_UNQUOTED([OSRELEASEFILE], ["$with_os_release"], [File with OS release details.])
 
+AC_ARG_WITH([config],
+            [AS_HELP_STRING([--with-config=DIR],
+			    [configuration path @<:@default=/.config@:>@])],
+            [],
+            [with_config="/.config"])
+dnl Performance Co-Pilot configuration location to prevent overwrite
+if test "$my_htop_platform" = pcp -a "$with_config" = /.config; then
+    with_config="/.pcp"
+elif test -z "$with_config"; then
+   AC_MSG_ERROR([bad empty value for --with-config option])
+fi
+AC_DEFINE_UNQUOTED([CONFIGDIR], ["$with_config"], [Configuration path.])
+
 # ----------------------------------------------------------------------
 
 
@@ -658,40 +703,27 @@ case "$enable_delayacct" in
       elif test "$enable_static" = yes; then
          enable_delayacct=no
       else
-         m4_ifdef([PKG_PROG_PKG_CONFIG], [
-            enable_delayacct=yes
-            PKG_PROG_PKG_CONFIG()
-            PKG_CHECK_MODULES(LIBNL3, libnl-3.0, [], [enable_delayacct=no])
-            PKG_CHECK_MODULES(LIBNL3GENL, libnl-genl-3.0, [], [enable_delayacct=no])
-            if test "$enable_delayacct" = yes; then
-               AM_CFLAGS="$AM_CFLAGS $LIBNL3_CFLAGS $LIBNL3GENL_CFLAGS"
-               LIBS="$LIBS $LIBNL3_LIBS $LIBNL3GENL_LIBS"
-               AC_DEFINE([HAVE_DELAYACCT], [1], [Define if delay accounting support should be enabled.])
-            fi
-         ], [
-            enable_delayacct=no
-            AC_MSG_NOTICE([Linux delay accounting support can not be enabled, cause pkg-config is required for checking its availability])
-         ])
+         old_CFLAGS="$CFLAGS"
+         CFLAGS="$CFLAGS -I/usr/include/libnl3"
+         AC_CHECK_HEADERS([netlink/attr.h netlink/handlers.h netlink/msg.h], [enable_delayacct=yes], [enable_delayacct=no])
+         CFLAGS="$old_CFLAGS"
       fi
       ;;
    yes)
-      m4_ifdef([PKG_PROG_PKG_CONFIG], [
-         PKG_PROG_PKG_CONFIG()
-         PKG_CHECK_MODULES(LIBNL3, libnl-3.0, [], [AC_MSG_ERROR([can not find required library libnl3])])
-         PKG_CHECK_MODULES(LIBNL3GENL, libnl-genl-3.0, [], [AC_MSG_ERROR([can not find required library libnl3genl])])
-         AM_CFLAGS="$AM_CFLAGS $LIBNL3_CFLAGS $LIBNL3GENL_CFLAGS"
-         LIBS="$LIBS $LIBNL3_LIBS $LIBNL3GENL_LIBS"
-         AC_DEFINE([HAVE_DELAYACCT], [1], [Define if delay accounting support should be enabled.])
-      ], [
-         pkg_m4_absent=1
-         m4_warning([configure is generated without pkg.m4. 'make dist' target will be disabled.])
-         AC_MSG_ERROR([htop on Linux requires pkg-config for checking delayacct requirements. Please install pkg-config and run ./autogen.sh to rebuild the configure script.])
-      ])
+      old_CFLAGS="$CFLAGS"
+      CFLAGS="$CFLAGS -I/usr/include/libnl3"
+      AC_CHECK_HEADERS([netlink/attr.h netlink/handlers.h netlink/msg.h], [], [AC_MSG_ERROR([can not find required header files netlink/attr.h, netlink/handlers.h, netlink/msg.h])])
+      CFLAGS="$old_CFLAGS"
       ;;
    *)
       AC_MSG_ERROR([bad value '$enable_delayacct' for --enable-delayacct])
       ;;
 esac
+if test "$enable_delayacct" = yes; then
+  AC_DEFINE([HAVE_DELAYACCT], [1], [Define if delay accounting support should be enabled.])
+  AM_CFLAGS="$AM_CFLAGS -I/usr/include/libnl3"
+fi
+AM_CONDITIONAL([HAVE_DELAYACCT], [test "$enable_delayacct" = yes])
 
 
 AC_ARG_ENABLE([sensors],

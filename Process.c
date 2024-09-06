@@ -649,10 +649,15 @@ void Process_writeField(const Process* this, RichString* str, RowField field) {
    case M_RESIDENT: Row_printKBytes(str, this->m_resident, coloring); return;
    case M_VIRT: Row_printKBytes(str, this->m_virt, coloring); return;
    case NICE:
-      xSnprintf(buffer, n, "%3ld ", this->nice);
-      attr = this->nice < 0 ? CRT_colors[PROCESS_HIGH_PRIORITY]
-         : this->nice > 0 ? CRT_colors[PROCESS_LOW_PRIORITY]
-         : CRT_colors[PROCESS_SHADOW];
+      if (this->nice == PROCESS_NICE_UNKNOWN) {
+         xSnprintf(buffer, n, "N/A ");
+         attr = CRT_colors[PROCESS_SHADOW];
+      } else {
+         xSnprintf(buffer, n, "%3ld ", this->nice);
+         attr = this->nice < 0 ? CRT_colors[PROCESS_HIGH_PRIORITY]
+            : this->nice > 0 ? CRT_colors[PROCESS_LOW_PRIORITY]
+            : CRT_colors[PROCESS_SHADOW];
+      }
       break;
    case NLWP:
       if (this->nlwp == 1)
@@ -736,7 +741,7 @@ void Process_writeField(const Process* this, RichString* str, RowField field) {
       }
       break;
    case USER:
-      if (this->elevated_priv)
+      if (this->elevated_priv == TRI_ON)
          attr = CRT_colors[PROCESS_PRIV];
       else if (host->htopUserId != this->st_uid)
          attr = CRT_colors[PROCESS_SHADOW];
@@ -860,12 +865,6 @@ static bool Process_setPriority(Process* this, int priority) {
       this->nice = priority;
    }
    return (err == 0);
-}
-
-bool Process_rowSetPriority(Row* super, int priority) {
-   Process* this = (Process*) super;
-   assert(Object_isA((const Object*) this, (const ObjectClass*) &Process_class));
-   return Process_setPriority(this, priority);
 }
 
 bool Process_rowChangePriorityBy(Row* super, Arg delta) {
@@ -1071,7 +1070,7 @@ void Process_updateExe(Process* this, const char* exe) {
 }
 
 void Process_updateCPUFieldWidths(float percentage) {
-   if (percentage < 99.9F) {
+   if (!isgreaterequal(percentage, 99.9F)) {
       Row_updateFieldWidth(PERCENT_CPU, 4);
       Row_updateFieldWidth(PERCENT_NORM_CPU, 4);
       return;

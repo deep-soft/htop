@@ -272,12 +272,18 @@ double Platform_setCPUValues(Meter* mtr, unsigned int cpu) {
       total += (double)curr->cpu_ticks[i] - (double)prev->cpu_ticks[i];
    }
 
-   mtr->values[CPU_METER_NICE]
-      = ((double)curr->cpu_ticks[CPU_STATE_NICE] - (double)prev->cpu_ticks[CPU_STATE_NICE]) * 100.0 / total;
-   mtr->values[CPU_METER_NORMAL]
-      = ((double)curr->cpu_ticks[CPU_STATE_USER] - (double)prev->cpu_ticks[CPU_STATE_USER]) * 100.0 / total;
-   mtr->values[CPU_METER_KERNEL]
-      = ((double)curr->cpu_ticks[CPU_STATE_SYSTEM] - (double)prev->cpu_ticks[CPU_STATE_SYSTEM]) * 100.0 / total;
+   if (total > 1e-6) {
+      mtr->values[CPU_METER_NICE]
+         = ((double)curr->cpu_ticks[CPU_STATE_NICE] - (double)prev->cpu_ticks[CPU_STATE_NICE]) * 100.0 / total;
+      mtr->values[CPU_METER_NORMAL]
+         = ((double)curr->cpu_ticks[CPU_STATE_USER] - (double)prev->cpu_ticks[CPU_STATE_USER]) * 100.0 / total;
+      mtr->values[CPU_METER_KERNEL]
+         = ((double)curr->cpu_ticks[CPU_STATE_SYSTEM] - (double)prev->cpu_ticks[CPU_STATE_SYSTEM]) * 100.0 / total;
+   } else {
+      mtr->values[CPU_METER_NICE] = 0.0;
+      mtr->values[CPU_METER_NORMAL] = 0.0;
+      mtr->values[CPU_METER_KERNEL] = 0.0;
+   }
 
    mtr->curItems = 3;
 
@@ -478,7 +484,7 @@ bool Platform_getDiskIO(DiskIOData* data) {
 bool Platform_getNetworkIO(NetworkIOData* data) {
    int mib[6] = {CTL_NET,
       PF_ROUTE, /* routing messages */
-      0, /* protocal number, currently always 0 */
+      0, /* protocol number, currently always 0 */
       0, /* select all address families */
       NET_RT_IFLIST2, /* interface list with addresses */
       0};
