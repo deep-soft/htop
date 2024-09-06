@@ -28,7 +28,7 @@ jobs:
       run: |
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
         PROG_VERSION=$(grep "m4_define(\[htop_release_version\]" configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
@@ -100,7 +100,8 @@ jobs:
       run: |
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        PROG_VERSION=$(grep "m4_define(\[htop_release_version\]" configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="clang-minimal";
@@ -173,7 +174,8 @@ jobs:
       run: |
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        PROG_VERSION=$(grep "m4_define(\[htop_release_version\]" configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="gcc-full";
@@ -263,7 +265,8 @@ jobs:
       run: |
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        PROG_VERSION=$(grep "m4_define(\[htop_release_version\]" configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="clang-full";
@@ -336,7 +339,8 @@ jobs:
       run: |
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        PROG_VERSION=$(grep "m4_define(\[htop_release_version\]" configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="gcc-static";
@@ -400,7 +404,8 @@ jobs:
       run: |
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        PROG_VERSION=$(grep "m4_define(\[htop_release_version\]" configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="pcp";
@@ -538,7 +543,8 @@ jobs:
       run: |
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk -F "-" '{print $1}' | awk -F " " '{print $2}' | tr -d "[");
         #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[" | tr -d "\-dev")
-        PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        #PROG_VERSION=$(grep AC_INIT configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
+        PROG_VERSION=$(grep "m4_define(\[htop_release_version\]" configure.ac  | awk '{print $2}' | awk -F "]" '{print $1}' | tr -d "[")
         echo "PROG_VERSION=$PROG_VERSION" >> $GITHUB_ENV
         echo "TAG_VERSION=$PROG_VERSION"  >> $GITHUB_ENV
         add_to_name="macOS";
